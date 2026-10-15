@@ -3,12 +3,19 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const ACCESS_TOKEN_KEY = "rotate_access_token";
 const REFRESH_TOKEN_KEY = "rotate_refresh_token";
 const USER_NAME_KEY = "rotate_user_name";
-const PENDING_USER_KEY = "rotate_pending_user";
 export const AUTH_CHANGED_EVENT = "rotate-auth-changed";
 
 export type AuthTokens = {
   access: string;
   refresh: string;
+};
+
+export type UserProfile = {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  role?: string;
 };
 
 type ApiErrorPayload = {
@@ -34,27 +41,25 @@ export function getCurrentUserName() {
   return getStoredToken(USER_NAME_KEY) ?? (getStoredToken(ACCESS_TOKEN_KEY) ? "Account" : null);
 }
 
-export function setPendingUser(name: string, email: string) {
-  window.localStorage.setItem(PENDING_USER_KEY, JSON.stringify({ name, email }));
-}
-
 function setLoggedInUser(email: string) {
-  const pendingUser = window.localStorage.getItem(PENDING_USER_KEY);
-  let name = email;
-
-  if (pendingUser) {
-    try {
-      const user = JSON.parse(pendingUser) as { name?: string; email?: string };
-      if (user.email === email && user.name) name = user.name;
-    } catch {}
-  }
-
-  window.localStorage.setItem(USER_NAME_KEY, name);
-  window.localStorage.removeItem(PENDING_USER_KEY);
+  window.localStorage.setItem(USER_NAME_KEY, email);
   notifyAuthChanged();
 }
 
-export function logout() {
+export async function logout() {
+  const refresh = getStoredToken(REFRESH_TOKEN_KEY);
+  const access = getStoredToken(ACCESS_TOKEN_KEY);
+
+  try {
+    if (refresh) {
+      await request("/logout", {
+        method: "POST",
+        headers: access ? { Authorization: `Bearer ${access}` } : undefined,
+        body: JSON.stringify({ refresh }),
+      });
+    }
+  } catch {}
+
   clearTokens();
   window.localStorage.removeItem(USER_NAME_KEY);
   notifyAuthChanged();
@@ -91,6 +96,7 @@ async function request<T>(path: string, init: RequestInit = {}) {
     throw new Error(await getErrorMessage(response));
   }
 
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 
@@ -111,11 +117,10 @@ export async function register(data: {
   phone: string;
   location: string;
 }) {
-  const tokens = await request<AuthTokens>("/register", {
+  await request<AuthTokens>("/register", {
     method: "POST",
     body: JSON.stringify(data),
   });
-  return tokens;
 }
 
 async function refreshAccessToken() {

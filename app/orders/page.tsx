@@ -28,7 +28,7 @@ export default function OrdersPage() {
     <main className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="text-2xl font-bold">My Orders</h1>
 
-      {loading && <p className="mt-6 text-gray-500">Loading your orders…</p>}
+      {loading && <p className="mt-6 text-gray-500">Loading your orders...</p>}
 
       {error && <p className="mt-6 text-red-600">{error}</p>}
 

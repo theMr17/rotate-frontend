@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   AUTH_CHANGED_EVENT,
   getCurrentUserName,
-  logout,
 } from "@/lib/api";
 
 const links = [
@@ -16,7 +14,6 @@ const links = [
 ];
 
 export default function Navbar() {
-  const router = useRouter();
   const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,11 +31,6 @@ export default function Navbar() {
     };
   }, []);
 
-  function handleLogout() {
-    logout();
-    router.push("/");
-  }
-
   return (
     <header className="border-b border-gray-200">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
@@ -52,16 +44,13 @@ export default function Navbar() {
             </Link>
           ))}
           {userName ? (
-            <>
-              <span className="text-sm font-medium text-gray-700">{userName}</span>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50"
-              >
-                Log out
-              </button>
-            </>
+            <Link
+              href="/profile"
+              title={`Open ${userName}'s profile`}
+              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50"
+            >
+              My Profile
+            </Link>
           ) : (
             <Link href="/login" className="rounded-md bg-emerald-600 hover:bg-emerald-700 px-4 py-2 text-white">
               Log in

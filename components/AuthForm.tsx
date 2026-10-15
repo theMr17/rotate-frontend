@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { login, register, setPendingUser } from "@/lib/api";
+import { login, register } from "@/lib/api";
 
 type AuthFormProps = {
   mode: "login" | "register";
@@ -34,7 +34,6 @@ export default function AuthForm({ mode }: AuthFormProps) {
     try {
       if (isRegister) {
         await register(form);
-        setPendingUser(form.name, form.email);
         router.push("/login");
       } else {
         await login(form.email, form.password);
@@ -149,7 +148,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
             disabled={isSubmitting}
             className="w-full rounded-md bg-emerald-600 px-4 py-2.5 font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Please wait…" : isRegister ? "Create account" : "Log in"}
+            {isSubmitting ? "Please wait..." : isRegister ? "Create account" : "Log in"}
           </button>
         </form>
 
