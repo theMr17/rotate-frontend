@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RentIt",
+  title: "Rotate",
   description: "Rent anything from people around you.",
 };
 

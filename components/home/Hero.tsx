@@ -5,7 +5,7 @@ export default function Hero() {
     <section className="bg-emerald-50">
       <div className="mx-auto max-w-6xl px-4 py-16 text-center sm:py-24">
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Why buy it when you can <span className="text-emerald-600">rent it</span>?
+          Why buy it when you can <span className="text-emerald-600">rotate</span>?
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-600">
           Borrow cycles, laptops, calculators and more from students around you,
