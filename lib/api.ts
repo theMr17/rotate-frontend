@@ -52,7 +52,7 @@ export async function logout() {
 
   try {
     if (refresh) {
-      await request("user/logout", {
+      await request("/user/logout", {
         method: "POST",
         headers: access ? { Authorization: `Bearer ${access}` } : undefined,
         body: JSON.stringify({ refresh }),
@@ -101,7 +101,7 @@ async function request<T>(path: string, init: RequestInit = {}) {
 }
 
 export async function login(email: string, password: string) {
-  const tokens = await request<AuthTokens>("user/login", {
+  const tokens = await request<AuthTokens>("/user/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
@@ -117,7 +117,7 @@ export async function register(data: {
   phone: string;
   location: string;
 }) {
-  await request<AuthTokens>("user/register", {
+  await request<AuthTokens>("/user/register", {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -128,7 +128,7 @@ async function refreshAccessToken() {
   if (!refresh) return null;
 
   try {
-    const tokens = await request<{ access: string }>("user/token/refresh", {
+    const tokens = await request<{ access: string }>("/user/token/refresh", {
       method: "POST",
       body: JSON.stringify({ refresh }),
     });
