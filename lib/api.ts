@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
 const ACCESS_TOKEN_KEY = "rotate_access_token";
 const REFRESH_TOKEN_KEY = "rotate_refresh_token";
@@ -52,7 +52,7 @@ export async function logout() {
 
   try {
     if (refresh) {
-      await request("/logout", {
+      await request("user/logout", {
         method: "POST",
         headers: access ? { Authorization: `Bearer ${access}` } : undefined,
         body: JSON.stringify({ refresh }),
@@ -101,7 +101,7 @@ async function request<T>(path: string, init: RequestInit = {}) {
 }
 
 export async function login(email: string, password: string) {
-  const tokens = await request<AuthTokens>("/login", {
+  const tokens = await request<AuthTokens>("user/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
@@ -117,7 +117,7 @@ export async function register(data: {
   phone: string;
   location: string;
 }) {
-  await request<AuthTokens>("/register", {
+  await request<AuthTokens>("user/register", {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -128,7 +128,7 @@ async function refreshAccessToken() {
   if (!refresh) return null;
 
   try {
-    const tokens = await request<{ access: string }>("/token/refresh", {
+    const tokens = await request<{ access: string }>("user/token/refresh", {
       method: "POST",
       body: JSON.stringify({ refresh }),
     });
@@ -165,4 +165,39 @@ export async function apiGet<T>(path: string): Promise<T> {
   }
 
   return response.json();
+}
+
+export async function apiPost<T>(path: string, data: unknown,): Promise<T> {
+  const access = getStoredToken(ACCESS_TOKEN_KEY);
+
+  const sendRequest = (token: string | null) =>
+    fetch(`${API_URL}${path}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      credentials: "include",
+      body: JSON.stringify(data),
+    });
+
+  let response = await sendRequest(access);
+
+  if (response.status === 401) {
+    const refreshedAccess = await refreshAccessToken();
+
+    if (refreshedAccess) {
+      response = await sendRequest(refreshedAccess);
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error(await getErrorMessage(response));
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return response.json() as Promise<T>;
 }
