@@ -60,7 +60,7 @@ export default function ItemDetailPage() {
           href="/items"
           className="mt-4 inline-block font-medium text-emerald-700 hover:underline"
         >
-          ← Back to items
+          Back to items
         </Link>
       </main>
     );
@@ -72,7 +72,7 @@ export default function ItemDetailPage() {
         href="/items"
         className="text-sm font-medium text-emerald-700 hover:underline"
       >
-        ← Back to items
+        Back to items
       </Link>
 
       <div className="mt-6 grid gap-8 md:grid-cols-2">

@@ -79,7 +79,7 @@ export default function NewItemPage() {
         href="/items"
         className="text-sm font-medium text-emerald-700 hover:underline"
       >
-        ← Back to items
+        Back to items
       </Link>
 
       <div className="mt-5">
