@@ -13,7 +13,7 @@ export default function OrdersPage() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await apiGet<Order[]>("/api/orders/");
+        const data = await apiGet<Order[]>("/orders/");
         setOrders(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong.");
