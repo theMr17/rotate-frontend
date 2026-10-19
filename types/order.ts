@@ -33,4 +33,6 @@ export type Order = {
   offers: Offer[];
   created_at: string;
   updated_at: string;
+  my_role: "borrower" | "lender";
+  available_actions: string[];
 };
