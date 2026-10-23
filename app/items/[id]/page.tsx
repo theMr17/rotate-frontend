@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { apiGet } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { Item } from "@/types/item";
 
 export default function ItemDetailPage() {
@@ -20,7 +20,7 @@ export default function ItemDetailPage() {
       setError(null);
 
       try {
-        const data = await apiGet<Item>(`/items/${id}/`);
+        const data = await api.get<Item>(`/items/${id}/`);
         setItem(data);
       } catch (err) {
         setError(

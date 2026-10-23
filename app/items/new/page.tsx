@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { apiPost } from "@/lib/api";
+import { api } from "@/lib/api";
 import type { CreateItemPayload, Item } from "@/types/item";
 
 const categories = [
@@ -49,7 +49,7 @@ export default function NewItemPage() {
     setError(null);
 
     try {
-      const createdItem = await apiPost<Item>("/items/", {
+      const createdItem = await api.post<Item>("/items/", {
         ...form,
         hourly_rate: Number(form.hourly_rate).toFixed(2),
         deposit_amount: Number(form.deposit_amount || 0).toFixed(2),

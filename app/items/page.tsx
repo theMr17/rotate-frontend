@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import ItemCard from "@/components/items/ItemCard";
-import { apiGet } from "@/lib/api";
+import { getPage } from "@/lib/api";
 import type { Item } from "@/types/item";
 
 const categories = [
@@ -41,8 +41,8 @@ export default function BrowsePage() {
         const query = params.toString();
         const endpoint = query ? `/items/?${query}` : "/items/";
 
-        const data = await apiGet<Item[]>(endpoint);
-        setItems(data);
+        const page = await getPage<Item>(endpoint);
+        setItems(page.results);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Could not load items.",
