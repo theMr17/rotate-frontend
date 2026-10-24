@@ -123,57 +123,98 @@ export default function OrderDetailPage() {
       </ol>
 
       {error && <p className="mt-6 text-red-600">{error}</p>}
-
-      {actions.length > 0 && (
+      {actions.includes("accept") && (
         <div className="mt-6 rounded-lg border border-gray-200 p-4">
           <p className="font-medium">Your turn to respond</p>
 
           <div className="mt-3 flex gap-3">
-            {actions.includes("accept") && (
-              <button
-                onClick={() => runAction("accept", {})}
-                disabled={busy}
-                className="rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
-              >
-                Accept
-              </button>
-            )}
-            {actions.includes("reject") && (
-              <button
-                onClick={() => runAction("reject", {})}
-                disabled={busy}
-                className="rounded-md border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50 disabled:opacity-50"
-              >
-                Reject
-              </button>
-            )}
+            <button
+              onClick={() => runAction("accept", {})}
+              disabled={busy}
+              className="rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => runAction("reject", {})}
+              disabled={busy}
+              className="rounded-md border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50 disabled:opacity-50"
+            >
+              Reject
+            </button>
           </div>
 
-          {actions.includes("counter") && (
-            <div className="mt-4 flex gap-3">
-              <input
-                type="number"
-                min="1"
-                placeholder="Your price per hour"
-                value={counterRate}
-                onChange={(e) => setCounterRate(e.target.value)}
-                className="flex-1 rounded-md border border-gray-300 px-3 py-2"
-              />
-              <button
-                onClick={sendCounter}
-                disabled={busy}
-                className="rounded-md border border-gray-300 px-4 py-2 hover:bg-gray-50 disabled:opacity-50"
-              >
-                Send counter
-              </button>
-            </div>
-          )}
+          <div className="mt-4 flex gap-3">
+            <input
+              type="number"
+              min="1"
+              placeholder="Your price per hour"
+              value={counterRate}
+              onChange={(e) => setCounterRate(e.target.value)}
+              className="flex-1 rounded-md border border-gray-300 px-3 py-2"
+            />
+            <button
+              onClick={sendCounter}
+              disabled={busy}
+              className="rounded-md border border-gray-300 px-4 py-2 hover:bg-gray-50 disabled:opacity-50"
+            >
+              Send counter
+            </button>
+          </div>
         </div>
       )}
 
-      {actions.length === 0 && order.status === "requested" && (
+      {order.status === "requested" && !actions.includes("accept") && (
         <p className="mt-6 text-gray-500">Waiting for the other person to respond.</p>
       )}
+
+      <div className="mt-6 flex flex-wrap gap-3">
+        {actions.includes("start") && (
+          <button
+            onClick={() => runAction("start", {})}
+            disabled={busy}
+            className="rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
+          >
+            Confirm handover
+          </button>
+        )}
+        {actions.includes("return") && (
+          <button
+            onClick={() => runAction("return", {})}
+            disabled={busy}
+            className="rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
+          >
+            Mark as returned
+          </button>
+        )}
+        {actions.includes("complete") && (
+          <button
+            onClick={() => runAction("complete", {})}
+            disabled={busy}
+            className="rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
+          >
+            Complete (item OK)
+          </button>
+        )}
+        {actions.includes("dispute") && (
+          <button
+            onClick={() => runAction("dispute", {})}
+            disabled={busy}
+            className="rounded-md border border-red-300 px-4 py-2 text-red-600 hover:bg-red-50 disabled:opacity-50"
+          >
+            Report damage
+          </button>
+        )}
+        {actions.includes("cancel") && (
+          <button
+            onClick={() => runAction("cancel", {})}
+            disabled={busy}
+            className="rounded-md border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Cancel order
+          </button>
+        )}
+      </div>
     </main>
   );
 }
