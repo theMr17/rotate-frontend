@@ -14,7 +14,7 @@ export default function ProfilePage() {
 
     async function loadProfile() {
       try {
-        const currentProfile = await apiGet<UserProfile>("/profile");
+        const currentProfile = await apiGet<UserProfile>("/user/profile");
         if (!cancelled) setProfile(currentProfile);
       } catch (err) {
         if (cancelled) return;
