@@ -1,3 +1,5 @@
+import type { RegisterPayload } from "@/types/user";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
 const ACCESS_TOKEN_KEY = "rotate_access_token";
@@ -8,14 +10,6 @@ export const AUTH_CHANGED_EVENT = "rotate-auth-changed";
 export type AuthTokens = {
   access: string;
   refresh: string;
-};
-
-export type UserProfile = {
-  name: string;
-  email: string;
-  phone: string;
-  location: string;
-  role?: string;
 };
 
 type ApiErrorPayload = {
@@ -110,13 +104,7 @@ export async function login(email: string, password: string) {
   return tokens;
 }
 
-export async function register(data: {
-  name: string;
-  email: string;
-  password: string;
-  phone: string;
-  location: string;
-}) {
+export async function register(data: RegisterPayload) {
   await request<AuthTokens>("/user/register", {
     method: "POST",
     body: JSON.stringify(data),
@@ -197,6 +185,59 @@ export async function apiPost<T>(path: string, data: unknown,): Promise<T> {
 
   if (response.status === 204) {
     return undefined as T;
+  }
+
+  return response.json() as Promise<T>;
+}
+
+export class ApiError extends Error {
+  fields: Record<string, string[]>;
+
+  constructor(message: string, fields: Record<string, string[]> = {}) {
+    super(message);
+    this.name = "ApiError";
+    this.fields = fields;
+  }
+}
+
+export async function apiPatch<T>(path: string, data: unknown): Promise<T> {
+  const access = getStoredToken(ACCESS_TOKEN_KEY);
+
+  const sendRequest = (token: string | null) =>
+    fetch(`${API_URL}${path}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      credentials: "include",
+      body: JSON.stringify(data),
+    });
+
+  let response = await sendRequest(access);
+
+  if (response.status === 401) {
+    const refreshedAccess = await refreshAccessToken();
+
+    if (refreshedAccess) {
+      response = await sendRequest(refreshedAccess);
+    }
+  }
+
+  if (!response.ok) {
+    let payload: ApiErrorPayload = {};
+    try {
+      payload = (await response.json()) as ApiErrorPayload;
+    } catch {}
+
+    const fields: Record<string, string[]> = {};
+    for (const [key, value] of Object.entries(payload)) {
+      if (key === "detail" || value === undefined) continue;
+      fields[key] = Array.isArray(value) ? value : [value];
+    }
+
+    const message = payload.detail ?? Object.values(fields).flat()[0] ?? `Request failed (${response.status})`;
+    throw new ApiError(message, fields);
   }
 
   return response.json() as Promise<T>;
