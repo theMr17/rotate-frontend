@@ -19,6 +19,14 @@ export type Offer = {
   created_at: string;
 };
 
+export type ConditionPhoto = {
+  id: number;
+  stage: "pre" | "post";
+  image: string;
+  uploaded_by: string;
+  created_at: string;
+};
+
 export type Order = {
   id: number;
   item: number;
@@ -31,6 +39,7 @@ export type Order = {
   agreed_hourly_rate: string | null;
   deposit_amount: string;
   offers: Offer[];
+  photos: ConditionPhoto[];
   created_at: string;
   updated_at: string;
   my_role: "borrower" | "lender";
