@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import StatusBadge from "@/components/orders/StatusBadge";
 import { apiGet, apiPost } from "@/lib/api";
 import type { Order } from "@/types/order";
+import ConditionPhotos from "@/components/orders/ConditionPhotos";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleString("en-IN", {
@@ -121,6 +122,8 @@ export default function OrderDetailPage() {
           </li>
         ))}
       </ol>
+      
+      <ConditionPhotos order={order} onUploaded={setOrder} />
 
       {error && <p className="mt-6 text-red-600">{error}</p>}
       {actions.includes("accept") && (
