@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Field from "@/components/form/Field";
 import HomeLocationFields from "@/components/form/HomeLocationFields";
-import { ApiError, apiPatch } from "@/lib/api";
+import { ApiError, updateProfile } from "@/lib/api";
 import { parseHomePoint, samePoint, toHomeLocationDraft } from "@/lib/homeLocation";
 import type { EditableProfileField, UpdateProfilePayload, UserProfile } from "@/types/user";
 
@@ -66,7 +66,7 @@ export default function ProfileEditForm({ profile, onSaved, onCancel }: ProfileE
 
     setIsSaving(true);
     try {
-      onSaved(await apiPatch<UserProfile>("/user/profile", changes));
+      onSaved(await updateProfile(changes));
     } catch (err) {
       if (err instanceof ApiError) {
         setFieldErrors(err.fields);

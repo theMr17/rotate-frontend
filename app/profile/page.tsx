@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProfileEditForm from "@/components/profile/ProfileEditForm";
-import { apiGet, logout } from "@/lib/api";
+import ProfilePhoto from "@/components/profile/ProfilePhoto";
+import { getProfile, logout } from "@/lib/api";
 import { formatPoint, mapUrl } from "@/lib/homeLocation";
 import type { UserProfile } from "@/types/user";
 
@@ -19,7 +20,7 @@ export default function ProfilePage() {
 
     async function loadProfile() {
       try {
-        const currentProfile = await apiGet<UserProfile>("/user/profile");
+        const currentProfile = await getProfile();
         if (!cancelled) setProfile(currentProfile);
       } catch (err) {
         if (cancelled) return;
@@ -91,6 +92,10 @@ export default function ProfilePage() {
               </button>
             </div>
           )}
+        </div>
+
+        <div className="border-b border-gray-100 py-6">
+          <ProfilePhoto key={isEditing ? "edit" : "view"} profile={profile} onChange={setProfile} editable={isEditing} />
         </div>
 
         {isEditing ? (
