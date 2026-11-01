@@ -142,7 +142,7 @@ export default function ProfilePhoto({ profile, onChange, editable = false }: Pr
                 {error}
               </p>
             ) : (
-              <p className="mt-2 text-xs text-gray-500">JPEG, PNG or WebP, up to 5 MB. Photo changes save right away.</p>
+              <p className="mt-2 text-xs text-gray-500">JPEG, PNG or WebP, up to 5 MB.</p>
             )}
           </>
         )}
