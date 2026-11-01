@@ -11,7 +11,8 @@ export type UserProfile = {
   location: string;
   home_location: GeoPoint | null;
   home_address_label: string;
-  role: string;
+  profile_photo_url: string;
+  role: "user" | "admin";
   is_verified: boolean;
   created_at: string;
   updated_at: string;
