@@ -6,6 +6,7 @@ import StatusBadge from "@/components/orders/StatusBadge";
 import { apiGet, apiPost } from "@/lib/api";
 import type { Order } from "@/types/order";
 import ConditionPhotos from "@/components/orders/ConditionPhotos";
+import ResolveDispute from "@/components/orders/ResolveDispute";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleString("en-IN", {
@@ -124,6 +125,19 @@ export default function OrderDetailPage() {
       </ol>
       
       <ConditionPhotos order={order} onUploaded={setOrder} />
+
+      {order.deposit_refund !== null && (
+        <div className="mt-6 rounded-lg border border-gray-200 p-4 text-sm">
+          <p className="font-medium">Deposit settlement</p>
+          <p className="mt-2">Refunded to borrower: Rs{order.deposit_refund}</p>
+          <p>Deducted for damage: Rs{order.deposit_deducted}</p>
+          {order.resolution_note && (
+            <p className="mt-1 text-gray-600">Admin note: {order.resolution_note}</p>
+          )}
+        </div>
+      )}
+
+      {actions.includes("resolve") && <ResolveDispute order={order} onResolved={setOrder} />}
 
       {error && <p className="mt-6 text-red-600">{error}</p>}
       {actions.includes("accept") && (
