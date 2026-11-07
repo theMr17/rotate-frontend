@@ -8,6 +8,7 @@ import { apiGet, apiPost } from "@/lib/api";
 
 import {
   getRentalNeed,
+  cancelRentalNeed,
 } from "@/lib/rental-needs-api";
 
 import RentalNeedResponseForm from "@/components/rental-needs/RentalNeedResponseForm";
@@ -30,6 +31,7 @@ type CurrentUser = {
 };
 
 
+// Format dates for display.
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString("en-IN", {
     dateStyle: "medium",
@@ -38,11 +40,13 @@ function formatDate(iso: string) {
 }
 
 
+// Format status labels.
 function formatStatus(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 
+// Status badge styling.
 function statusClass(status: string) {
   switch (status) {
     case "open":
@@ -66,12 +70,14 @@ function statusClass(status: string) {
 
 
 export default function RentalNeedDetailPage() {
-  const params = useParams<{ id: string }>();
 
+  const params = useParams<{ id: string }>();
   const needId = Number(params.id);
 
   const [need, setNeed] = useState<RentalNeedDetail | null>(null);
+
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+
   const [myItems, setMyItems] = useState<Item[]>([]);
 
   const [loading, setLoading] = useState(true);
@@ -80,10 +86,16 @@ export default function RentalNeedDetailPage() {
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const [refreshKey, setRefreshKey] = useState(0);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelError, setCancelError] = useState<string | null>(null);
 
+
+  // --------------------------------------------------
+  // Load rental request
+  // --------------------------------------------------
 
   const loadNeed = useCallback(async () => {
+
     if (!Number.isInteger(needId) || needId <= 0) {
       setError("Invalid rental request ID.");
       setLoading(false);
@@ -96,72 +108,100 @@ export default function RentalNeedDetailPage() {
     try {
       const data = await getRentalNeed(needId);
       setNeed(data);
+
     } catch (err) {
+
       setError(
         err instanceof Error
           ? err.message
           : "Could not load the rental request.",
       );
+
     } finally {
       setLoading(false);
     }
+
   }, [needId]);
 
 
+  // Initial loading.
   useEffect(() => {
+
     const timer = setTimeout(() => {
       void loadNeed();
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [loadNeed, refreshKey]);
+
+  }, [loadNeed]);
 
 
-  // Load current user and their items.
+  // --------------------------------------------------
+  // Load current user and their items
+  // --------------------------------------------------
 
-    const requesterId = need?.requester;
+  const requesterId = need?.requester;
 
-    useEffect(() => {
+  useEffect(() => {
+
     if (requesterId === undefined) return;
 
     let cancelled = false;
 
     async function loadUserData() {
-        try {
+
+      try {
+
         const profile = await apiGet<CurrentUser>("/user/profile");
 
         if (cancelled) return;
 
         setCurrentUser(profile);
 
-        // Fetch the user's items only if they are not
-        // the person who posted this requirement.
-        if (profile.id !== requesterId) {
-            const items = await apiGet<Item[]>("/items/?mine=true");
-
-            if (!cancelled) {
-            setMyItems(items);
-            }
-        } else {
-            setMyItems([]);
+        // The requester does not need their own items loaded.
+        if (profile.id === requesterId) {
+          setMyItems([]);
+          return;
         }
+
+        // Load the current user's available listings.
+        try {
+
+          const items = await apiGet<Item[]>("/items/?mine=true");
+
+          if (!cancelled) {
+            setMyItems(items);
+          }
 
         } catch {
-        if (!cancelled) {
-            setCurrentUser(null);
+          if (!cancelled) {
             setMyItems([]);
+          }
         }
+
+      } catch {
+
+        // User is not logged in or profile request failed.
+        if (!cancelled) {
+          setCurrentUser(null);
+          setMyItems([]);
         }
+
+      }
     }
 
     void loadUserData();
 
     return () => {
-        cancelled = true;
+      cancelled = true;
     };
 
-    }, [requesterId]);
+  }, [requesterId]);
 
+
+  // --------------------------------------------------
+  // Determine current user's role
+  // --------------------------------------------------
 
   const isRequester =
     currentUser !== null &&
@@ -176,47 +216,113 @@ export default function RentalNeedDetailPage() {
     );
 
 
+  // --------------------------------------------------
+  // Refresh request details
+  // --------------------------------------------------
+
   async function refreshRequest() {
-    setRefreshKey((current) => current + 1);
+    await loadNeed();
   }
 
+
+  // --------------------------------------------------
+  // Cancel rental request
+  // --------------------------------------------------
+
+  async function handleCancelNeed() {
+
+    if (!need) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this rental request? All pending provider offers will be rejected."
+    );
+
+    if (!confirmed) return;
+
+    setCancelLoading(true);
+    setCancelError(null);
+
+    try {
+
+      await cancelRentalNeed(need.id);
+
+      // Fetch the updated request and response statuses.
+      await loadNeed();
+
+    } catch (err) {
+
+      setCancelError(
+        err instanceof Error
+          ? err.message
+          : "Could not cancel the rental request."
+      );
+
+    } finally {
+
+      setCancelLoading(false);
+
+    }
+  }
+
+
+  // --------------------------------------------------
+  // Accept or reject an Order offer
+  // --------------------------------------------------
 
   async function handleOrderAction(
     orderId: number,
     action: "accept" | "reject",
   ) {
+
     setActionLoading(orderId);
     setActionError(null);
 
     try {
+
       await apiPost<RentalNeedOrder>(
         `/orders/${orderId}/${action}/`,
         {},
       );
 
       await loadNeed();
+
     } catch (err) {
+
       setActionError(
         err instanceof Error
           ? err.message
           : "Could not complete the action.",
       );
+
     } finally {
+
       setActionLoading(null);
+
     }
   }
 
 
+  // --------------------------------------------------
+  // Loading state
+  // --------------------------------------------------
+
   if (loading && !need) {
+
     return (
       <main className="mx-auto max-w-5xl px-4 py-12 text-gray-500">
         Loading rental request...
       </main>
     );
+
   }
 
 
+  // --------------------------------------------------
+  // Error state
+  // --------------------------------------------------
+
   if (error || !need) {
+
     return (
       <main className="mx-auto max-w-5xl px-4 py-12">
 
@@ -233,13 +339,19 @@ export default function RentalNeedDetailPage() {
 
       </main>
     );
+
   }
 
 
+  // --------------------------------------------------
+  // Main page
+  // --------------------------------------------------
+
   return (
+
     <main className="mx-auto max-w-5xl px-4 py-8 sm:py-12">
 
-      {/* Back link */}
+      {/* Back navigation */}
 
       <Link
         href="/rental-needs"
@@ -249,7 +361,9 @@ export default function RentalNeedDetailPage() {
       </Link>
 
 
+      {/* -------------------------------------------- */}
       {/* Request details */}
+      {/* -------------------------------------------- */}
 
       <section className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
 
@@ -267,6 +381,7 @@ export default function RentalNeedDetailPage() {
 
         </div>
 
+
         <h1 className="mt-5 text-2xl font-bold text-gray-900 sm:text-3xl">
           {need.title}
         </h1>
@@ -274,6 +389,7 @@ export default function RentalNeedDetailPage() {
         <p className="mt-3 whitespace-pre-wrap leading-7 text-gray-600">
           {need.description || "No additional description provided."}
         </p>
+
 
         <div className="mt-7 grid gap-5 border-t border-gray-100 pt-6 sm:grid-cols-2">
 
@@ -306,7 +422,10 @@ export default function RentalNeedDetailPage() {
           </div>
 
           <div>
-            <p className="text-sm text-gray-500">Maximum hourly budget</p>
+            <p className="text-sm text-gray-500">
+              Maximum hourly budget
+            </p>
+
             <p className="mt-1 font-medium text-gray-900">
               {need.budget_per_hour
                 ? `₹${need.budget_per_hour}/hour`
@@ -323,24 +442,57 @@ export default function RentalNeedDetailPage() {
 
         </div>
 
+
+        {/* Cancel button - requester only */}
+
+        {isRequester && need.status === "open" && (
+
+          <div className="mt-7 border-t border-gray-100 pt-5">
+
+            <button
+              type="button"
+              onClick={handleCancelNeed}
+              disabled={cancelLoading}
+              className="rounded-md border border-red-300 px-5 py-2.5 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+            >
+              {cancelLoading
+                ? "Cancelling..."
+                : "Cancel request"}
+            </button>
+
+            {cancelError && (
+              <p className="mt-2 text-sm text-red-600">
+                {cancelError}
+              </p>
+            )}
+
+          </div>
+
+        )}
+
       </section>
 
 
+      {/* -------------------------------------------- */}
       {/* Provider response form */}
+      {/* -------------------------------------------- */}
 
-      {need.status === "open" && !isRequester && currentUser && !alreadyResponded && (
+      {need.status === "open" &&
+        !isRequester &&
+        currentUser &&
+        !alreadyResponded && (
 
-        <div className="mt-7">
+          <div className="mt-7">
 
-          <RentalNeedResponseForm
-            needId={need.id}
-            items={myItems}
-            onSuccess={refreshRequest}
-          />
+            <RentalNeedResponseForm
+              needId={need.id}
+              items={myItems}
+              onSuccess={refreshRequest}
+            />
 
-        </div>
+          </div>
 
-      )}
+        )}
 
 
       {/* Login prompt */}
@@ -377,22 +529,28 @@ export default function RentalNeedDetailPage() {
       )}
 
 
-      {/* Provider responses */}
+      {/* -------------------------------------------- */}
+      {/* Provider responses and offers */}
+      {/* -------------------------------------------- */}
 
       <section className="mt-10">
 
         <div className="flex flex-wrap items-center justify-between gap-3">
 
           <div>
+
             <h2 className="text-xl font-bold text-gray-900">
               Responses and offers
             </h2>
 
             <p className="mt-1 text-sm text-gray-500">
               {need.responses.length}{" "}
-              {need.responses.length === 1 ? "provider has" : "providers have"}{" "}
+              {need.responses.length === 1
+                ? "provider has"
+                : "providers have"}{" "}
               responded to this request.
             </p>
+
           </div>
 
           <button
@@ -406,6 +564,8 @@ export default function RentalNeedDetailPage() {
         </div>
 
 
+        {/* Empty state */}
+
         {need.responses.length === 0 && (
 
           <div className="mt-5 rounded-xl border border-dashed border-gray-300 px-6 py-10 text-center">
@@ -415,13 +575,16 @@ export default function RentalNeedDetailPage() {
             </p>
 
             <p className="mt-2 text-sm text-gray-500">
-              Providers can respond with their available items and proposed rates.
+              Providers can respond with their available items
+              and proposed rates.
             </p>
 
           </div>
 
         )}
 
+
+        {/* Response cards */}
 
         <div className="mt-5 space-y-5">
 
@@ -436,7 +599,7 @@ export default function RentalNeedDetailPage() {
                 className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
               >
 
-                {/* Provider and order information */}
+                {/* Provider information */}
 
                 <div className="flex flex-wrap items-start justify-between gap-3">
 
@@ -465,7 +628,7 @@ export default function RentalNeedDetailPage() {
                 </div>
 
 
-                {/* Offer history */}
+                {/* Negotiation history */}
 
                 <div className="mt-5 border-t border-gray-100 pt-4">
 
@@ -517,46 +680,54 @@ export default function RentalNeedDetailPage() {
                 </div>
 
 
-                {/* Requester's actions */}
+                {/* Requester's acceptance/rejection actions */}
 
                 {isRequester &&
                   order.allowed_actions?.length > 0 &&
-                  (order.allowed_actions.includes("accept") ||
-                    order.allowed_actions.includes("reject")) && (
+                  (
+                    order.allowed_actions.includes("accept") ||
+                    order.allowed_actions.includes("reject")
+                  ) && (
 
-                  <div className="mt-5 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
+                    <div className="mt-5 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
 
-                    {order.allowed_actions.includes("accept") && (
+                      {order.allowed_actions.includes("accept") && (
 
-                      <button
-                        type="button"
-                        disabled={actionLoading === order.id}
-                        onClick={() => handleOrderAction(order.id, "accept")}
-                        className="rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-                      >
-                        {actionLoading === order.id
-                          ? "Processing..."
-                          : "Accept offer"}
-                      </button>
+                        <button
+                          type="button"
+                          disabled={actionLoading !== null}
+                          onClick={() =>
+                            handleOrderAction(order.id, "accept")
+                          }
+                          className="rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+                        >
+                          {actionLoading === order.id
+                            ? "Processing..."
+                            : "Accept offer"}
+                        </button>
 
-                    )}
+                      )}
 
-                    {order.allowed_actions.includes("reject") && (
+                      {order.allowed_actions.includes("reject") && (
 
-                      <button
-                        type="button"
-                        disabled={actionLoading === order.id}
-                        onClick={() => handleOrderAction(order.id, "reject")}
-                        className="rounded-md border border-red-300 px-5 py-2.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
-                      >
-                        Reject offer
-                      </button>
+                        <button
+                          type="button"
+                          disabled={actionLoading !== null}
+                          onClick={() =>
+                            handleOrderAction(order.id, "reject")
+                          }
+                          className="rounded-md border border-red-300 px-5 py-2.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+                        >
+                          {actionLoading === order.id
+                            ? "Processing..."
+                            : "Reject offer"}
+                        </button>
 
-                    )}
+                      )}
 
-                  </div>
+                    </div>
 
-                )}
+                  )}
 
               </article>
 
@@ -566,6 +737,8 @@ export default function RentalNeedDetailPage() {
 
         </div>
 
+
+        {/* Order action errors */}
 
         {actionError && (
 
@@ -578,7 +751,9 @@ export default function RentalNeedDetailPage() {
       </section>
 
 
-      {/* Link to normal orders */}
+      {/* -------------------------------------------- */}
+      {/* Orders navigation */}
+      {/* -------------------------------------------- */}
 
       <div className="mt-8 border-t border-gray-200 pt-6">
 
@@ -592,5 +767,7 @@ export default function RentalNeedDetailPage() {
       </div>
 
     </main>
+
   );
+
 }
