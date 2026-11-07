@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import RentalNeedCounterOfferForm from "@/components/rental-needs/RentalNeedCounterOfferForm";
 
 import { apiGet, apiPost } from "@/lib/api";
 
@@ -726,8 +727,18 @@ export default function RentalNeedDetailPage() {
                       )}
 
                     </div>
-
                   )}
+                  {/* Counteroffer form */}
+
+                    {order.allowed_actions?.includes("counter") && (
+                    <RentalNeedCounterOfferForm
+                        orderId={order.id}
+                        initialRate={
+                        order.offers[order.offers.length - 1]?.hourly_rate ?? ""
+                        }
+                        onSuccess={refreshRequest}
+                    />
+                    )}
 
               </article>
 
