@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/api";
 import type { Item } from "@/types/item";
+import Image from "next/image";
 
 export default function ItemDetailPage() {
   const params = useParams<{ id: string }>();
@@ -78,7 +79,15 @@ export default function ItemDetailPage() {
       <div className="mt-6 grid gap-8 md:grid-cols-2">
         <div className="flex min-h-72 items-center justify-center rounded-xl bg-emerald-50">
           <span className="text-8xl" aria-hidden="true">
-            📦
+            <div className="flex h-36 items-center justify-center bg-emerald-50">
+              <Image
+                src="/package.png"
+                alt="Package"
+                width={120}
+                height={120}
+                className="h-24 w-24 object-contain"
+              />
+            </div>
           </span>
         </div>
 
@@ -113,7 +122,7 @@ export default function ItemDetailPage() {
             <div className="mt-4 flex justify-between border-t border-gray-100 pt-4 text-sm">
               <span className="text-gray-500">Security deposit</span>
               <span className="font-semibold text-gray-900">
-                ₹{Number(item.deposit_amount).toLocaleString("en-IN")}
+                Rs{Number(item.deposit_amount).toLocaleString("en-IN")}
               </span>
             </div>
 

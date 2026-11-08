@@ -153,7 +153,7 @@ export default function NewItemPage() {
         <div className="grid gap-5 sm:grid-cols-2">
           <div>
             <label htmlFor="hourly_rate" className={labelClass}>
-              Rental rate (₹ per hour)
+              Rental rate (Rs per hour)
             </label>
             <input
               id="hourly_rate"
@@ -172,7 +172,7 @@ export default function NewItemPage() {
 
           <div>
             <label htmlFor="deposit_amount" className={labelClass}>
-              Security deposit (₹)
+              Security deposit (Rs)
             </label>
             <input
               id="deposit_amount"

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Item } from "@/types/item";
+import Image from "next/image";
 
 type ItemCardProps = {
   item: Item;
@@ -19,7 +20,15 @@ export default function ItemCard({ item }: ItemCardProps) {
     >
       <div className="flex h-36 items-center justify-center bg-emerald-50">
         <span className="text-5xl" aria-hidden="true">
-          📦
+          <div className="flex h-36 items-center justify-center bg-emerald-50">
+            <Image
+              src="/package.png"
+              alt="Package"
+              width={120}
+              height={120}
+              className="h-24 w-24 object-contain"
+            />
+          </div>
         </span>
       </div>
 
@@ -35,7 +44,7 @@ export default function ItemCard({ item }: ItemCardProps) {
         </div>
 
         <p className="mt-2 text-sm text-gray-500">
-          {item.category} · {item.condition.replace("_", " ")}
+          {item.category} . {item.condition.replace("_", " ")}
         </p>
 
         <p className="mt-3 line-clamp-2 text-sm text-gray-600">
@@ -49,12 +58,12 @@ export default function ItemCard({ item }: ItemCardProps) {
               <span className="text-sm font-normal text-gray-500">/hour</span>
             </p>
             <p className="mt-1 text-xs text-gray-500">
-              Deposit: ₹{Number(item.deposit_amount).toLocaleString("en-IN")}
+              Deposit: Rs{Number(item.deposit_amount).toLocaleString("en-IN")}
             </p>
           </div>
 
           <span className="text-sm font-medium text-emerald-700">
-            View details →
+            View details 
           </span>
         </div>
       </div>
