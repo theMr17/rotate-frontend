@@ -1,3 +1,5 @@
+import type { Trust } from "@/types/trust";
+
 export type GeoPoint = {
   lat: number;
   lng: number;
@@ -14,8 +16,19 @@ export type UserProfile = {
   profile_photo_url: string;
   role: "user" | "admin";
   is_verified: boolean;
+  trust: Trust;
   created_at: string;
   updated_at: string;
+};
+
+export type PublicProfile = {
+  id: number;
+  name: string;
+  location: string;
+  profile_photo_url: string;
+  is_verified: boolean;
+  trust: Trust;
+  created_at: string;
 };
 
 export type RegisterPayload = {
