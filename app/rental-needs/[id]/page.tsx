@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import RentalNeedCounterOfferForm from "@/components/rental-needs/RentalNeedCounterOfferForm";
 
 import { apiGet, apiPost } from "@/lib/api";
 
@@ -13,12 +12,12 @@ import {
 } from "@/lib/rental-needs-api";
 
 import RentalNeedResponseForm from "@/components/rental-needs/RentalNeedResponseForm";
+import RentalNeedCounterOfferForm from "@/components/rental-needs/RentalNeedCounterOfferForm";
 
 import type { Item } from "@/types/item";
 
 import type {
   RentalNeedDetail,
-  RentalNeedResponse,
   RentalNeedOrder,
 } from "@/types/rental-need";
 
@@ -32,29 +31,30 @@ type CurrentUser = {
 };
 
 
-// Format dates for display.
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("en-IN", {
+// --------------------------------------------------
+// Helper functions
+// --------------------------------------------------
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleString("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
   });
 }
 
 
-// Format status labels.
 function formatStatus(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 
-// Status badge styling.
 function statusClass(status: string) {
   switch (status) {
     case "open":
-    case "accepted":
     case "pending":
       return "bg-emerald-50 text-emerald-700";
 
+    case "accepted":
     case "fulfilled":
     case "completed":
     case "active":
@@ -70,10 +70,24 @@ function statusClass(status: string) {
 }
 
 
+function sameEmail(first: string, second: string) {
+  return first.trim().toLowerCase() === second.trim().toLowerCase();
+}
+
+
+// ==================================================
+// Main page
+// ==================================================
+
 export default function RentalNeedDetailPage() {
 
   const params = useParams<{ id: string }>();
   const needId = Number(params.id);
+
+
+  // --------------------------------------------------
+  // State
+  // --------------------------------------------------
 
   const [need, setNeed] = useState<RentalNeedDetail | null>(null);
 
@@ -107,7 +121,9 @@ export default function RentalNeedDetailPage() {
     setError(null);
 
     try {
+
       const data = await getRentalNeed(needId);
+
       setNeed(data);
 
     } catch (err) {
@@ -115,30 +131,32 @@ export default function RentalNeedDetailPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Could not load the rental request.",
+          : "Could not load the rental request."
       );
 
     } finally {
+
       setLoading(false);
+
     }
 
   }, [needId]);
 
 
-  // Initial loading.
+  // Load request when the page opens.
   useEffect(() => {
 
-    const timer = setTimeout(() => {
+    const timer = window.setTimeout(() => {
       void loadNeed();
     }, 0);
 
-    return () => clearTimeout(timer);
+    return () => window.clearTimeout(timer);
 
   }, [loadNeed]);
 
 
   // --------------------------------------------------
-  // Load current user and their items
+  // Load logged-in user and their items
   // --------------------------------------------------
 
   const requesterId = need?.requester;
@@ -159,13 +177,13 @@ export default function RentalNeedDetailPage() {
 
         setCurrentUser(profile);
 
-        // The requester does not need their own items loaded.
+        // Requester does not need to load their own items.
         if (profile.id === requesterId) {
           setMyItems([]);
           return;
         }
 
-        // Load the current user's available listings.
+        // Load the current provider's own listings.
         try {
 
           const items = await apiGet<Item[]>("/items/?mine=true");
@@ -175,20 +193,23 @@ export default function RentalNeedDetailPage() {
           }
 
         } catch {
+
           if (!cancelled) {
             setMyItems([]);
           }
+
         }
 
       } catch {
 
-        // User is not logged in or profile request failed.
+        // User is not logged in.
         if (!cancelled) {
           setCurrentUser(null);
           setMyItems([]);
         }
 
       }
+
     }
 
     void loadUserData();
@@ -209,11 +230,13 @@ export default function RentalNeedDetailPage() {
     need !== null &&
     currentUser.id === need.requester;
 
+
+  // Has this user already responded as a provider?
   const alreadyResponded =
     currentUser !== null &&
     need !== null &&
     need.responses.some(
-      (response) => response.provider === currentUser.id,
+      (response) => response.provider === currentUser.id
     );
 
 
@@ -247,7 +270,6 @@ export default function RentalNeedDetailPage() {
 
       await cancelRentalNeed(need.id);
 
-      // Fetch the updated request and response statuses.
       await loadNeed();
 
     } catch (err) {
@@ -263,16 +285,17 @@ export default function RentalNeedDetailPage() {
       setCancelLoading(false);
 
     }
+
   }
 
 
   // --------------------------------------------------
-  // Accept or reject an Order offer
+  // Accept or reject an offer
   // --------------------------------------------------
 
   async function handleOrderAction(
     orderId: number,
-    action: "accept" | "reject",
+    action: "accept" | "reject"
   ) {
 
     setActionLoading(orderId);
@@ -282,7 +305,7 @@ export default function RentalNeedDetailPage() {
 
       await apiPost<RentalNeedOrder>(
         `/orders/${orderId}/${action}/`,
-        {},
+        {}
       );
 
       await loadNeed();
@@ -292,7 +315,7 @@ export default function RentalNeedDetailPage() {
       setActionError(
         err instanceof Error
           ? err.message
-          : "Could not complete the action.",
+          : "Could not complete the action."
       );
 
     } finally {
@@ -300,6 +323,7 @@ export default function RentalNeedDetailPage() {
       setActionLoading(null);
 
     }
+
   }
 
 
@@ -344,9 +368,9 @@ export default function RentalNeedDetailPage() {
   }
 
 
-  // --------------------------------------------------
-  // Main page
-  // --------------------------------------------------
+  // ==================================================
+  // Main UI
+  // ==================================================
 
   return (
 
@@ -363,7 +387,7 @@ export default function RentalNeedDetailPage() {
 
 
       {/* -------------------------------------------- */}
-      {/* Request details */}
+      {/* Rental request details */}
       {/* -------------------------------------------- */}
 
       <section className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -395,32 +419,48 @@ export default function RentalNeedDetailPage() {
         <div className="mt-7 grid gap-5 border-t border-gray-100 pt-6 sm:grid-cols-2">
 
           <div>
-            <p className="text-sm text-gray-500">Requested by</p>
+            <p className="text-sm text-gray-500">
+              Requested by
+            </p>
+
             <p className="mt-1 font-medium text-gray-900">
               {need.requester_name}
             </p>
           </div>
 
+
           <div>
-            <p className="text-sm text-gray-500">Location</p>
+            <p className="text-sm text-gray-500">
+              Location
+            </p>
+
             <p className="mt-1 font-medium text-gray-900">
               {need.location}
             </p>
           </div>
 
+
           <div>
-            <p className="text-sm text-gray-500">Required from</p>
+            <p className="text-sm text-gray-500">
+              Required from
+            </p>
+
             <p className="mt-1 font-medium text-gray-900">
               {formatDate(need.start_time)}
             </p>
           </div>
 
+
           <div>
-            <p className="text-sm text-gray-500">Required until</p>
+            <p className="text-sm text-gray-500">
+              Required until
+            </p>
+
             <p className="mt-1 font-medium text-gray-900">
               {formatDate(need.end_time)}
             </p>
           </div>
+
 
           <div>
             <p className="text-sm text-gray-500">
@@ -434,8 +474,12 @@ export default function RentalNeedDetailPage() {
             </p>
           </div>
 
+
           <div>
-            <p className="text-sm text-gray-500">Request ID</p>
+            <p className="text-sm text-gray-500">
+              Request ID
+            </p>
+
             <p className="mt-1 font-medium text-gray-900">
               #{need.id}
             </p>
@@ -444,7 +488,7 @@ export default function RentalNeedDetailPage() {
         </div>
 
 
-        {/* Cancel button - requester only */}
+        {/* Cancel request - requester only */}
 
         {isRequester && need.status === "open" && (
 
@@ -460,6 +504,7 @@ export default function RentalNeedDetailPage() {
                 ? "Cancelling..."
                 : "Cancel request"}
             </button>
+
 
             {cancelError && (
               <p className="mt-2 text-sm text-red-600">
@@ -554,6 +599,7 @@ export default function RentalNeedDetailPage() {
 
           </div>
 
+
           <button
             type="button"
             onClick={refreshRequest}
@@ -589,9 +635,54 @@ export default function RentalNeedDetailPage() {
 
         <div className="mt-5 space-y-5">
 
-          {need.responses.map((response: RentalNeedResponse) => {
+          {need.responses.map((response) => {
 
             const order = response.order;
+
+
+            // Find the currently pending offer.
+            const pendingOffer = order.offers.find(
+              (offer) => offer.status === "pending"
+            );
+
+
+            // The requester and this response's provider
+            // are the only participants in this Order.
+            const currentUserIsInThisOrder =
+              currentUser !== null &&
+              (
+                currentUser.id === need.requester ||
+                currentUser.id === response.provider
+              );
+
+
+            // The current user can respond only if the
+            // other participant made the pending offer.
+            const canRespondToOffer = Boolean(
+              currentUser &&
+              currentUserIsInThisOrder &&
+              order.status === "requested" &&
+              pendingOffer &&
+              !sameEmail(
+                pendingOffer.proposed_by,
+                currentUser.email
+              )
+            );
+
+
+            // Is the current user waiting for the other
+            // participant to respond to their offer?
+            const waitingForOtherPerson = Boolean(
+              currentUser &&
+              currentUserIsInThisOrder &&
+              order.status === "requested" &&
+              pendingOffer &&
+              sameEmail(
+                pendingOffer.proposed_by,
+                currentUser.email
+              )
+            );
+
 
             return (
 
@@ -615,10 +706,11 @@ export default function RentalNeedDetailPage() {
                     </h3>
 
                     <p className="mt-1 text-sm text-gray-500">
-                      Order #{order.id} · {order.item.title}
+                      Order #{order.id} · {order.item_title}
                     </p>
 
                   </div>
+
 
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-medium ${statusClass(order.status)}`}
@@ -629,13 +721,16 @@ export default function RentalNeedDetailPage() {
                 </div>
 
 
+                {/* ------------------------------------ */}
                 {/* Negotiation history */}
+                {/* ------------------------------------ */}
 
                 <div className="mt-5 border-t border-gray-100 pt-4">
 
                   <h4 className="text-sm font-semibold text-gray-800">
                     Negotiation history
                   </h4>
+
 
                   <div className="mt-3 space-y-3">
 
@@ -649,10 +744,11 @@ export default function RentalNeedDetailPage() {
                         <div className="flex flex-wrap items-center justify-between gap-2">
 
                           <p className="text-sm font-semibold text-gray-900">
-                            {offer.proposed_by === response.provider
+                            {sameEmail(offer.proposed_by, order.lender)
                               ? "Provider's offer"
-                              : "Requester's counteroffer"}
+                              : "Requester's offer"}
                           </p>
+
 
                           <span
                             className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClass(offer.status)}`}
@@ -662,9 +758,11 @@ export default function RentalNeedDetailPage() {
 
                         </div>
 
+
                         <p className="mt-2 text-lg font-semibold text-emerald-700">
                           ₹{offer.hourly_rate}/hour
                         </p>
+
 
                         {offer.message && (
                           <p className="mt-1 text-sm text-gray-600">
@@ -681,64 +779,76 @@ export default function RentalNeedDetailPage() {
                 </div>
 
 
-                {/* Requester's acceptance/rejection actions */}
+                {/* ------------------------------------ */}
+                {/* Accept / reject / counteroffer */}
+                {/* ------------------------------------ */}
 
-                {isRequester &&
-                  order.allowed_actions?.length > 0 &&
-                  (
-                    order.allowed_actions.includes("accept") ||
-                    order.allowed_actions.includes("reject")
-                  ) && (
+                {canRespondToOffer && pendingOffer && (
 
-                    <div className="mt-5 flex flex-wrap gap-3 border-t border-gray-100 pt-4">
+                  <div className="mt-5 border-t border-gray-100 pt-4">
 
-                      {order.allowed_actions.includes("accept") && (
+                    <p className="mb-3 text-sm font-medium text-gray-800">
+                      This offer is waiting for your response.
+                    </p>
 
-                        <button
-                          type="button"
-                          disabled={actionLoading !== null}
-                          onClick={() =>
-                            handleOrderAction(order.id, "accept")
-                          }
-                          className="rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-                        >
-                          {actionLoading === order.id
-                            ? "Processing..."
-                            : "Accept offer"}
-                        </button>
 
-                      )}
+                    <div className="flex flex-wrap gap-3">
 
-                      {order.allowed_actions.includes("reject") && (
+                      <button
+                        type="button"
+                        disabled={actionLoading !== null}
+                        onClick={() =>
+                          handleOrderAction(order.id, "accept")
+                        }
+                        className="rounded-md bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
+                      >
+                        {actionLoading === order.id
+                          ? "Processing..."
+                          : "Accept offer"}
+                      </button>
 
-                        <button
-                          type="button"
-                          disabled={actionLoading !== null}
-                          onClick={() =>
-                            handleOrderAction(order.id, "reject")
-                          }
-                          className="rounded-md border border-red-300 px-5 py-2.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
-                        >
-                          {actionLoading === order.id
-                            ? "Processing..."
-                            : "Reject offer"}
-                        </button>
 
-                      )}
+                      <button
+                        type="button"
+                        disabled={actionLoading !== null}
+                        onClick={() =>
+                          handleOrderAction(order.id, "reject")
+                        }
+                        className="rounded-md border border-red-300 px-5 py-2.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+                      >
+                        {actionLoading === order.id
+                          ? "Processing..."
+                          : "Reject offer"}
+                      </button>
 
                     </div>
-                  )}
-                  {/* Counteroffer form */}
 
-                    {order.allowed_actions?.includes("counter") && (
+
+                    {/* Counteroffer form */}
+
                     <RentalNeedCounterOfferForm
-                        orderId={order.id}
-                        initialRate={
-                        order.offers[order.offers.length - 1]?.hourly_rate ?? ""
-                        }
-                        onSuccess={refreshRequest}
+                      orderId={order.id}
+                      initialRate={pendingOffer.hourly_rate}
+                      onSuccess={refreshRequest}
                     />
-                    )}
+
+                  </div>
+
+                )}
+
+
+                {/* Waiting for the other participant */}
+
+                {waitingForOtherPerson && (
+
+                  <div className="mt-5 rounded-lg bg-gray-50 p-4 text-sm text-gray-600">
+                    Your offer has been submitted. Waiting for the
+                    other participant to accept, reject, or make a
+                    counteroffer.
+                  </div>
+
+                )}
+
 
               </article>
 

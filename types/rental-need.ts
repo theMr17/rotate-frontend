@@ -1,3 +1,4 @@
+
 export type RentalNeedStatus =
   | "open"
   | "fulfilled"
@@ -57,22 +58,9 @@ export type RespondToRentalNeedPayload = {
   message: string;
 };
 
-export type RentalNeedParticipant = {
-  id: number;
-  name: string;
-  avatar: string | null;
-  reliability_score: number | null;
-
-  contact: {
-    email: string;
-    phone: string;
-    location: string;
-  } | null;
-};
-
 export type RentalNeedOffer = {
   id: number;
-  proposed_by: number;
+  proposed_by: string;
   hourly_rate: string;
   message: string;
   status: OfferStatus;
@@ -81,20 +69,11 @@ export type RentalNeedOffer = {
 
 export type RentalNeedOrder = {
   id: number;
-  booking_ref: string;
+  item: number;
+  item_title: string;
 
-  item: {
-    id: number;
-    title: string;
-    cover_photo: string | null;
-    owner: number;
-  };
-
-  borrower: RentalNeedParticipant;
-  lender: RentalNeedParticipant;
-
-  my_role: "borrower" | "lender" | null;
-  allowed_actions: string[];
+  borrower: string;
+  lender: string;
 
   start_time: string;
   end_time: string;
@@ -102,17 +81,9 @@ export type RentalNeedOrder = {
   status: OrderStatus;
 
   agreed_hourly_rate: string | null;
-  rental_fee: string | null;
-  platform_fee: string | null;
   deposit_amount: string;
-  total_due: string | null;
 
   offers: RentalNeedOffer[];
-
-  started_at: string | null;
-  returned_at: string | null;
-  completed_at: string | null;
-  cancelled_by: number | null;
 
   created_at: string;
   updated_at: string;
