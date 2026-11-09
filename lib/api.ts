@@ -1,4 +1,5 @@
-import type { RegisterPayload, UpdateProfilePayload, UserProfile } from "@/types/user";
+import type { CreateReviewPayload, OrderReviewStatus, Paginated, Review, ReviewRole } from "@/types/trust";
+import type { PublicProfile, RegisterPayload, UpdateProfilePayload, UserProfile } from "@/types/user";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
@@ -295,4 +296,36 @@ export async function deleteProfilePhoto() {
   await authorizedFetch("/user/profile/photo", { method: "DELETE" });
   const stored = getStoredProfile();
   if (stored) storeProfile({ ...stored, profile_photo_url: "" });
+}
+
+async function authorizedGet<T>(path: string) {
+  const response = await authorizedFetch(path, {});
+  return (await response.json()) as T;
+}
+
+export function getPublicProfile(id: number | string) {
+  return authorizedGet<PublicProfile>(`/users/${id}`);
+}
+
+export function getUserReviews(
+  id: number | string,
+  { role, page = 1, pageSize }: { role?: ReviewRole; page?: number; pageSize?: number } = {},
+) {
+  const params = new URLSearchParams({ page: String(page) });
+  if (role) params.set("role", role);
+  if (pageSize) params.set("page_size", String(pageSize));
+  return authorizedGet<Paginated<Review>>(`/users/${id}/reviews?${params}`);
+}
+
+export function getOrderReviewStatus(orderId: number | string) {
+  return authorizedGet<OrderReviewStatus>(`/reviews/order/${orderId}`);
+}
+
+export async function createReview(review: CreateReviewPayload) {
+  const response = await authorizedFetch("/reviews", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(review),
+  });
+  return (await response.json()) as Review;
 }
