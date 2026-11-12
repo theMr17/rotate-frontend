@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { apiGet, logout, type UserProfile } from "@/lib/api";
+import { ApiError, api, logout } from "@/lib/api";
+import type { UserProfile } from "@/types/user";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -14,16 +15,15 @@ export default function ProfilePage() {
 
     async function loadProfile() {
       try {
-        const currentProfile = await apiGet<UserProfile>("/profile");
+        const currentProfile = await api.get<UserProfile>("/user/profile");
         if (!cancelled) setProfile(currentProfile);
       } catch (err) {
         if (cancelled) return;
 
-        const message = err instanceof Error ? err.message : "Unable to load your profile.";
-        if (message === "Please log in to continue.") {
+        if (err instanceof ApiError && err.isUnauthorized) {
           router.replace("/login");
         } else {
-          setError(message);
+          setError(err instanceof Error ? err.message : "Unable to load your profile.");
         }
       }
     }

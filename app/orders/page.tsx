@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import OrderCard from "@/components/orders/OrderCard";
-import { apiGet } from "@/lib/api";
+import { getPage } from "@/lib/api";
 import type { Order } from "@/types/order";
 
 export default function OrdersPage() {
@@ -13,8 +13,8 @@ export default function OrdersPage() {
   useEffect(() => {
     async function load() {
       try {
-        const data = await apiGet<Order[]>("/orders/");
-        setOrders(data);
+        const page = await getPage<Order>("/orders/");
+        setOrders(page.results);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Something went wrong.");
       } finally {
