@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ProfileEditForm from "@/components/profile/ProfileEditForm";
 import ProfilePhoto from "@/components/profile/ProfilePhoto";
+import ReviewList from "@/components/trust/ReviewList";
+import TrustBadges from "@/components/trust/TrustBadges";
 import { getProfile, logout } from "@/lib/api";
 import { formatPoint, mapUrl } from "@/lib/homeLocation";
 import type { UserProfile } from "@/types/user";
@@ -161,6 +163,17 @@ export default function ProfilePage() {
                   </dd>
                 </div>
               </dl>
+            </div>
+
+            <div className="mt-8 border-t border-gray-100 pt-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Trust</h2>
+              <div className="mt-4">
+                <TrustBadges trust={profile.trust} />
+              </div>
+            </div>
+
+            <div className="mt-8 border-t border-gray-100 pt-6">
+              <ReviewList userId={profile.id} title="Reviews about you" emptyText="No one has reviewed you yet." />
             </div>
           </>
         )}
