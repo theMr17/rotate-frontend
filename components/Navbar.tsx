@@ -2,10 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import Avatar from "@/components/Avatar";
 import {
   AUTH_CHANGED_EVENT,
   getCurrentUserName,
+  getProfile,
+  getStoredProfile,
 } from "@/lib/api";
+import type { UserProfile } from "@/types/user";
 
 const links = [
   { href: "/items", label: "Browse Items" },
@@ -16,10 +20,12 @@ const links = [
 
 export default function Navbar() {
   const [userName, setUserName] = useState<string | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     function syncAuthState() {
       setUserName(getCurrentUserName());
+      setProfile(getStoredProfile());
     }
 
     syncAuthState();
@@ -31,6 +37,12 @@ export default function Navbar() {
       window.removeEventListener("storage", syncAuthState);
     };
   }, []);
+
+  // Logged in but no profile stored yet (e.g. right after login): load it once.
+  // getProfile() stores the result and fires AUTH_CHANGED_EVENT, which updates `profile` above.
+  useEffect(() => {
+    if (userName && !profile) getProfile().catch(() => {});
+  }, [userName, profile]);
 
   return (
     <header className="border-b border-gray-200">
@@ -48,8 +60,9 @@ export default function Navbar() {
             <Link
               href="/profile"
               title={`Open ${userName}'s profile`}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50"
+              className="flex items-center gap-2 rounded-full border border-gray-300 py-1 pl-1 pr-4 text-sm font-medium hover:bg-gray-50"
             >
+              <Avatar name={profile?.name || userName} photoUrl={profile?.profile_photo_url ?? ""} size={28} decorative />
               My Profile
             </Link>
           ) : (
