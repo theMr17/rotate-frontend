@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import HomeLocationFields from "@/components/form/HomeLocationFields";
 import { login, register } from "@/lib/api";
+import { EMPTY_HOME_LOCATION, parseHomePoint } from "@/lib/homeLocation";
 
 type AuthFormProps = {
   mode: "login" | "register";
@@ -19,6 +21,8 @@ export default function AuthForm({ mode }: AuthFormProps) {
     phone: "",
     location: "",
   });
+  const [homeLocation, setHomeLocation] = useState(EMPTY_HOME_LOCATION);
+  const [homeLocationError, setHomeLocationError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -29,11 +33,24 @@ export default function AuthForm({ mode }: AuthFormProps) {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    setHomeLocationError(null);
+
+    const parsed = parseHomePoint(homeLocation);
+    if (isRegister && !parsed.ok) {
+      setHomeLocationError(parsed.error);
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       if (isRegister) {
-        await register(form);
+        const label = homeLocation.label.trim();
+        await register({
+          ...form,
+          ...(parsed.ok && parsed.point && { home_location: parsed.point }),
+          ...(label && { home_address_label: label }),
+        });
         router.push("/login");
       } else {
         await login(form.email, form.password);
@@ -122,6 +139,16 @@ export default function AuthForm({ mode }: AuthFormProps) {
                 />
               </div>
             </div>
+          )}
+
+          {isRegister && (
+            <HomeLocationFields
+              idPrefix="register"
+              value={homeLocation}
+              onChange={setHomeLocation}
+              pointError={homeLocationError ?? undefined}
+              disabled={isSubmitting}
+            />
           )}
 
           <div>
