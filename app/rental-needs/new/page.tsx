@@ -107,11 +107,8 @@ export default function NewRentalNeedPage() {
       <main className="mx-auto max-w-2xl px-4 py-12">
 
         <div className="rounded-xl border border-emerald-200 bg-white p-8 text-center shadow-sm">
-
-          <div className="text-4xl">✓</div>
-
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">
-            Requirement posted successfully!
+          <h1 className="text-2xl font-bold text-gray-900">
+            Requirement posted successfully
           </h1>
 
           <p className="mt-3 text-gray-600">
@@ -149,7 +146,7 @@ export default function NewRentalNeedPage() {
         href="/rental-needs"
         className="text-sm font-medium text-emerald-700 hover:underline"
       >
-        ← Back to rental requests
+        Back to rental requests
       </Link>
 
       {/* Heading */}
@@ -335,7 +332,7 @@ export default function NewRentalNeedPage() {
         <div>
 
           <label htmlFor="budget" className={labelClass}>
-            Maximum budget (₹ per hour)
+            Maximum budget (Rs per hour)
           </label>
 
           <input

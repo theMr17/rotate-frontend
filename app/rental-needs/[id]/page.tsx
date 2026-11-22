@@ -382,7 +382,7 @@ export default function RentalNeedDetailPage() {
         href="/rental-needs"
         className="text-sm font-medium text-emerald-700 hover:underline"
       >
-        ← Back to rental requests
+        Back to rental requests
       </Link>
 
 
@@ -394,12 +394,12 @@ export default function RentalNeedDetailPage() {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
 
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+          <span className="rounded-sm bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
             {need.category}
           </span>
 
           <span
-            className={`rounded-full px-3 py-1 text-xs font-medium ${statusClass(need.status)}`}
+            className={`rounded-sm px-3 py-1 text-xs font-medium ${statusClass(need.status)}`}
           >
             {formatStatus(need.status)}
           </span>
@@ -469,7 +469,7 @@ export default function RentalNeedDetailPage() {
 
             <p className="mt-1 font-medium text-gray-900">
               {need.budget_per_hour
-                ? `₹${need.budget_per_hour}/hour`
+                ? `Rs ${need.budget_per_hour}/hour`
                 : "Flexible"}
             </p>
           </div>
@@ -555,7 +555,7 @@ export default function RentalNeedDetailPage() {
             href="/login"
             className="mt-3 inline-block font-medium text-emerald-700 hover:underline"
           >
-            Log in to respond →
+            Log in to respond
           </Link>
 
         </div>
@@ -706,14 +706,14 @@ export default function RentalNeedDetailPage() {
                     </h3>
 
                     <p className="mt-1 text-sm text-gray-500">
-                      Order #{order.id} · {order.item_title}
+                      Order #{order.id} - {order.item_title}
                     </p>
 
                   </div>
 
 
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${statusClass(order.status)}`}
+                    className={`rounded-sm px-3 py-1 text-xs font-medium ${statusClass(order.status)}`}
                   >
                     {formatStatus(order.status)}
                   </span>
@@ -751,7 +751,7 @@ export default function RentalNeedDetailPage() {
 
 
                           <span
-                            className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClass(offer.status)}`}
+                            className={`rounded-sm px-2.5 py-1 text-xs font-medium ${statusClass(offer.status)}`}
                           >
                             {formatStatus(offer.status)}
                           </span>
@@ -760,7 +760,7 @@ export default function RentalNeedDetailPage() {
 
 
                         <p className="mt-2 text-lg font-semibold text-emerald-700">
-                          ₹{offer.hourly_rate}/hour
+                          Rs {offer.hourly_rate}/hour
                         </p>
 
 
@@ -882,7 +882,7 @@ export default function RentalNeedDetailPage() {
           href="/orders"
           className="text-sm font-medium text-emerald-700 hover:underline"
         >
-          View all your orders →
+          View all your orders
         </Link>
 
       </div>

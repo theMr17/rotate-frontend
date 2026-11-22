@@ -61,7 +61,7 @@ export default function RentalNeedCounterOfferForm({
 
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
-            Proposed rate (₹/hour)
+            Proposed rate (Rs/hour)
           </label>
 
           <input

@@ -13,7 +13,7 @@ const styles: Record<OrderStatus, string> = {
 
 export default function StatusBadge({ status }: { status: OrderStatus }) {
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${styles[status]}`}>
+    <span className={`rounded-sm px-3 py-1 text-xs font-medium capitalize ${styles[status]}`}>
       {status}
     </span>
   );

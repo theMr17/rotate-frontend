@@ -15,7 +15,7 @@ function formatDate(iso: string) {
 function formatBudget(budget: string | null) {
   if (!budget) return "Flexible budget";
 
-  return `₹${Number(budget).toLocaleString("en-IN")}/hour`;
+  return `Rs ${Number(budget).toLocaleString("en-IN")}/hour`;
 }
 
 export default function RentalNeedCard({
@@ -28,7 +28,7 @@ export default function RentalNeedCard({
       {/* Category and request ID */}
       <div className="flex items-start justify-between gap-3">
 
-        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+        <span className="rounded-sm bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
           {need.category}
         </span>
 
@@ -51,14 +51,14 @@ export default function RentalNeedCard({
       <div className="mt-5 space-y-3 border-t border-gray-100 pt-4">
 
         <div className="flex items-start gap-2 text-sm">
-          <span>📍</span>
+          <span className="w-12 shrink-0 text-gray-500">Where</span>
           <span className="text-gray-700">
             {need.location}
           </span>
         </div>
 
         <div className="flex items-start gap-2 text-sm">
-          <span>📅</span>
+          <span className="w-12 shrink-0 text-gray-500">When</span>
 
           <div className="text-gray-700">
             <p>{formatDate(need.start_time)}</p>
@@ -87,7 +87,7 @@ export default function RentalNeedCard({
         href={`/rental-needs/${need.id}`}
         className="mt-5 rounded-md border border-emerald-600 px-4 py-2.5 text-center text-sm font-medium text-emerald-700 transition hover:bg-emerald-50"
       >
-        View request →
+        View request
       </Link>
 
     </article>

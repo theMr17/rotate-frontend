@@ -96,7 +96,7 @@ export default function RentalNeedResponseForm({
             href="/items/new"
             className="mt-3 inline-block text-sm font-medium text-emerald-700 hover:underline"
           >
-            List an item first →
+            List an item first
           </Link>
         </div>
       ) : (
@@ -120,7 +120,7 @@ export default function RentalNeedResponseForm({
 
               {availableItems.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.title} — ₹{item.hourly_rate}/hour
+                  {item.title} - Rs {item.hourly_rate}/hour
                 </option>
               ))}
             </select>
@@ -131,7 +131,7 @@ export default function RentalNeedResponseForm({
               htmlFor="response-rate"
               className="mb-1.5 block text-sm font-medium text-gray-700"
             >
-              Your proposed rate (₹ per hour)
+              Your proposed rate (Rs per hour)
             </label>
 
             <input

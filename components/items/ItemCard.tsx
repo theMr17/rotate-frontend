@@ -38,7 +38,7 @@ export default function ItemCard({ item }: ItemCardProps) {
             {item.title}
           </h2>
 
-          <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+          <span className="shrink-0 rounded-sm bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
             {item.status === "AVAILABLE" ? "Available" : "Unavailable"}
           </span>
         </div>

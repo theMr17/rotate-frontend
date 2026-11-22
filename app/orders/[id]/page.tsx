@@ -7,6 +7,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import type { Order } from "@/types/order";
 import ConditionPhotos from "@/components/orders/ConditionPhotos";
 import ResolveDispute from "@/components/orders/ResolveDispute";
+import OrderReview from "@/components/orders/OrderReview";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleString("en-IN", {
@@ -138,6 +139,8 @@ export default function OrderDetailPage() {
       )}
 
       {actions.includes("resolve") && <ResolveDispute order={order} onResolved={setOrder} />}
+
+      {order.status === "completed" && order.my_role !== "admin" && <OrderReview order={order} />}
 
       {error && <p className="mt-6 text-red-600">{error}</p>}
       {actions.includes("accept") && (

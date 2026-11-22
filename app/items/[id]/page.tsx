@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { apiGet } from "@/lib/api";
+import { apiGet, getCurrentUserName, getProfile, getStoredProfile } from "@/lib/api";
 import type { Item } from "@/types/item";
 import Image from "next/image";
 
@@ -14,6 +14,19 @@ export default function ItemDetailPage() {
   const [item, setItem] = useState<Item | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [userId, setUserId] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function loadUser() {
+      if (!getCurrentUserName()) return;
+      const profile = getStoredProfile() ?? (await getProfile().catch(() => null));
+      setLoggedIn(true);
+      setUserId(profile?.id ?? null);
+    }
+
+    void loadUser();
+  }, []);
 
   useEffect(() => {
     async function loadItem() {
@@ -93,11 +106,11 @@ export default function ItemDetailPage() {
 
         <section>
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+            <span className="rounded-sm bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
               {item.category}
             </span>
 
-            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-700">
+            <span className="rounded-sm bg-gray-100 px-3 py-1 text-sm text-gray-700">
               {item.condition.replace("_", " ")}
             </span>
           </div>
@@ -139,6 +152,23 @@ export default function ItemDetailPage() {
               </span>
             </div>
           </div>
+
+          {userId === item.owner ? (
+            <p className="mt-4 text-sm text-gray-500">
+              This is your listing. Manage it from{" "}
+              <Link href="/items/mine" className="font-medium text-emerald-700 hover:underline">
+                My Listings
+              </Link>
+              .
+            </p>
+          ) : item.status === "AVAILABLE" ? (
+            <Link
+              href={loggedIn ? `/orders/new/${item.id}` : "/login"}
+              className="mt-4 block rounded-md bg-emerald-600 px-4 py-2.5 text-center font-medium text-white hover:bg-emerald-700"
+            >
+              {loggedIn ? "Request to rent" : "Log in to rent"}
+            </Link>
+          ) : null}
         </section>
       </div>
     </main>

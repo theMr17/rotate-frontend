@@ -15,6 +15,7 @@ const links = [
   { href: "/items", label: "Browse Items" },
   { href: "/rental-needs", label: "Rental Requests" },
   { href: "/orders", label: "My Orders" },
+  { href: "/items/mine", label: "My Listings" },
   { href: "/items/new", label: "List an Item" },
 ];
 
@@ -60,7 +61,7 @@ export default function Navbar() {
             <Link
               href="/profile"
               title={`Open ${userName}'s profile`}
-              className="flex items-center gap-2 rounded-full border border-gray-300 py-1 pl-1 pr-4 text-sm font-medium hover:bg-gray-50"
+              className="flex items-center gap-2 rounded-md border border-gray-300 py-1 pl-1 pr-4 text-sm font-medium hover:bg-gray-50"
             >
               <Avatar name={profile?.name || userName} photoUrl={profile?.profile_photo_url ?? ""} size={28} decorative />
               My Profile

@@ -62,13 +62,13 @@ export default function PublicProfilePage() {
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight text-gray-900">{profile.name}</h1>
               {profile.is_verified && (
-                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
-                  ✓ Verified
+                <span className="rounded-sm bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+                  Verified
                 </span>
               )}
             </div>
             <p className="mt-1 text-sm text-gray-500">
-              {profile.location && <>{profile.location} · </>}Member since {memberSince}
+              {profile.location && <>{profile.location} - </>}Member since {memberSince}
             </p>
           </div>
         </div>

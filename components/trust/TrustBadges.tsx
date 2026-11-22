@@ -21,7 +21,7 @@ function reliabilityBreakdown(reliability: Trust["reliability"]) {
   const parts = [`${reliability.on_time_returns} of ${reliability.rentals_counted} returns on time`];
   if (reliability.late_returns) parts.push(plural(reliability.late_returns, "late return"));
   if (reliability.late_cancellations) parts.push(plural(reliability.late_cancellations, "late cancellation"));
-  return parts.join(" · ");
+  return parts.join(" - ");
 }
 
 function Rating({ stat, compact = false }: { stat: RatingStat; compact?: boolean }) {
@@ -40,12 +40,12 @@ function Rating({ stat, compact = false }: { stat: RatingStat; compact?: boolean
 function ReliabilityBadge({ reliability, withScore }: { reliability: Trust["reliability"]; withScore: boolean }) {
   const isNew = isNewMember(reliability);
   const level = isNew ? LEVELS.new : LEVELS[reliability.level];
-  const text = isNew ? level.label : withScore ? `Reliability ${reliability.score} · ${level.label}` : level.label;
+  const text = isNew ? level.label : withScore ? `Reliability ${reliability.score} - ${level.label}` : level.label;
 
   return (
     <span
       title={reliabilityBreakdown(reliability)}
-      className={`inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${level.className}`}
+      className={`inline-flex items-center whitespace-nowrap rounded-sm px-2.5 py-0.5 text-xs font-medium ${level.className}`}
     >
       {text}
     </span>

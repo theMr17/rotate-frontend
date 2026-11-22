@@ -261,6 +261,10 @@ export async function apiPatch<T>(path: string, data: unknown): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export async function apiDelete(path: string) {
+  await authorizedFetch(path, { method: "DELETE" });
+}
+
 export function getStoredProfile(): UserProfile | null {
   const raw = getStoredToken(USER_PROFILE_KEY);
   if (!raw) return null;

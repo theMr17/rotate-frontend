@@ -21,7 +21,7 @@ export default function HowItWorks() {
         <div className="mt-6 grid gap-6 sm:grid-cols-3">
           {steps.map((step, index) => (
             <div key={step.title}>
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 font-bold text-white">
+              <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-emerald-600 font-bold text-white">
                 {index + 1}
               </span>
               <h3 className="mt-3 font-semibold">{step.title}</h3>
