@@ -1,5 +1,18 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+
+### i. Rental Needs
+•⁠  ⁠*Frontend:* AI assistance was used in ⁠ app/rental-needs/ ⁠, to implement the rental-request feature. For example ⁠ app/rental-needs/[id]/page.tsx ⁠ file. This feature was developed towards the later stages and involved complex integration with the existing Orders and Offers workflow.
+
+•⁠  ⁠*Backend:* AI assistance was used in ⁠ rental_needs/signals.py ⁠, especially for integrating Rental Needs with the order lifecycle.
+
+### ii. Rating and Review System
+AI assistance helped in developing this feature. This included developing the underlying functionality, connecting the APIs, and integrating the feature into the existing application workflow. ex -
+
+•⁠  ⁠*Frontend:*  TrustBadges.tsx
+
+•⁠  ⁠*Backend:*   trust/
+
 ## Getting Started
 
 First, run the development server:
